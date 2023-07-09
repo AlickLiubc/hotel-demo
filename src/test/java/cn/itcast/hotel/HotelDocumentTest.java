@@ -8,6 +8,7 @@ import org.apache.http.HttpHost;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -56,6 +57,21 @@ public class HotelDocumentTest {
         // 转换成Java对象
         HotelDoc hotelDoc = JSON.parseObject(resultString, HotelDoc.class);
         System.out.println(hotelDoc);
+    }
+
+    @Test
+    void testUpdateDocument() throws IOException {
+        // 1.准备Request对象
+        UpdateRequest request = new UpdateRequest("hotel", "36934");
+
+        // 2.准备需要修改的数据
+        request.doc(
+                "price", "338",
+                "starName", "四钻"
+        );
+
+        // 3.发送请求
+        client.update(request, RequestOptions.DEFAULT);
     }
 
     @BeforeEach
