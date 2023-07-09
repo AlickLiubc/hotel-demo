@@ -1,10 +1,12 @@
 package cn.itcast.hotel;
 
-import cn.itcast.hotel.pojo.HotelDoc;
-import com.alibaba.fastjson.JSON;
 import cn.itcast.hotel.pojo.Hotel;
+import cn.itcast.hotel.pojo.HotelDoc;
 import cn.itcast.hotel.service.IHotelService;
+import com.alibaba.fastjson.JSON;
 import org.apache.http.HttpHost;
+import org.elasticsearch.action.get.GetRequest;
+import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
@@ -39,6 +41,21 @@ public class HotelDocumentTest {
 
         // 3.发送数据
         client.index(indexRequest, RequestOptions.DEFAULT);
+    }
+
+    @Test
+    void testGetDocumentById() throws IOException {
+        // 1.准备Request对象
+        GetRequest request = new GetRequest("hotel", "36934");
+
+        // 2.发送请求，得到对象
+        GetResponse response = client.get(request, RequestOptions.DEFAULT);
+
+        String resultString = response.getSourceAsString();
+
+        // 转换成Java对象
+        HotelDoc hotelDoc = JSON.parseObject(resultString, HotelDoc.class);
+        System.out.println(hotelDoc);
     }
 
     @BeforeEach
