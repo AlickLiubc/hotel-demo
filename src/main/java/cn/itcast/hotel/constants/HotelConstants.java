@@ -1,4 +1,4 @@
-package com.itcast.hotel.constants;
+package cn.itcast.hotel.constants;
 
 public class HotelConstants {
 

@@ -1,4 +1,4 @@
-package com.itcast.hotel;
+package cn.itcast.hotel;
 
 import org.apache.http.HttpHost;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static com.itcast.hotel.constants.HotelConstants.MAPPING_TEMPLATE;
+import static cn.itcast.hotel.constants.HotelConstants.MAPPING_TEMPLATE;
 
 public class HotelIndexTest {
     private RestHighLevelClient client;

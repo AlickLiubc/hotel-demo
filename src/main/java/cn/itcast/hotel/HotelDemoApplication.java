@@ -1,4 +1,4 @@
-package com.itcast.hotel;
+package cn.itcast.hotel;
 
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
