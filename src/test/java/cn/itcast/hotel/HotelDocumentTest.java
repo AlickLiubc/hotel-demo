@@ -5,6 +5,8 @@ import cn.itcast.hotel.pojo.HotelDoc;
 import cn.itcast.hotel.service.IHotelService;
 import com.alibaba.fastjson.JSON;
 import org.apache.http.HttpHost;
+import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
@@ -20,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.IOException;
+import java.util.List;
 
 @SpringBootTest
 public class HotelDocumentTest {
@@ -42,6 +45,27 @@ public class HotelDocumentTest {
 
         // 3.发送数据
         client.index(indexRequest, RequestOptions.DEFAULT);
+    }
+
+    @Test
+    void testBulkDocument() throws IOException {
+        // 从数据库中查询数据
+        List<Hotel> hotels = hotelService.list();
+
+        // 1.准备request
+        BulkRequest request = new BulkRequest();
+
+        // 2. 准备数据
+        for (Hotel hotel : hotels) {
+            HotelDoc hotelDoc = new HotelDoc(hotel);
+            request.add(new IndexRequest("hotel")
+                            .id(hotelDoc.getId().toString())
+                            .source(JSON.toJSONString(hotelDoc), XContentType.JSON));
+
+        }
+
+        // 3.发送请求
+        client.bulk(request, RequestOptions.DEFAULT);
     }
 
     @Test
@@ -72,6 +96,16 @@ public class HotelDocumentTest {
 
         // 3.发送请求
         client.update(request, RequestOptions.DEFAULT);
+    }
+
+
+    @Test
+    void testDeleteDocument() throws IOException {
+        // 1.准备request
+        DeleteRequest request = new DeleteRequest("hotel", "36934");
+
+        // 2.发送请求
+        client.delete(request, RequestOptions.DEFAULT);
     }
 
     @BeforeEach
