@@ -7,6 +7,8 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,7 +31,22 @@ public class HotelSearchTest {
         // 3.发送请求
         SearchResponse response = client.search(request, RequestOptions.DEFAULT);
 
-        System.out.println(response);
+//        System.out.println(response);
+
+        // 4.解析结果数据
+        SearchHits searchHits = response.getHits();
+
+        // 总数
+        long total = searchHits.getTotalHits().value;
+        System.out.println("数据总量为：" + total);
+
+        // 结果
+        SearchHit[] hits = searchHits.getHits();
+        for (SearchHit hit : hits) {
+            String json = hit.getSourceAsString();
+
+            System.out.println(json);
+        }
     }
 
     @BeforeEach
