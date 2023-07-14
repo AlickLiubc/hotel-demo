@@ -31,7 +31,7 @@ public class HotelSearchTest {
         // 3.发送请求
         SearchResponse response = client.search(request, RequestOptions.DEFAULT);
 
-//        System.out.println(response);
+        // System.out.println(response);
 
         // 4.解析结果数据
         SearchHits searchHits = response.getHits();
