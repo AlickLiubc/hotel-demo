@@ -8,6 +8,7 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -69,6 +70,26 @@ public class HotelSearchTest {
         // 3.发送请求
         SearchResponse response = client.search(request, RequestOptions.DEFAULT);
 
+        // System.out.println(response);
+
+        // 4.解析结果数据
+        handleResponse(response);
+    }
+
+    @Test
+    void testBool() throws IOException {
+        // 1.准备Request
+        SearchRequest request = new SearchRequest("hotel");
+
+        // 2.准备DSL
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+        boolQuery.must(QueryBuilders.termQuery("city", "上海"));
+        // boolQuery.filter(QueryBuilders.rangeQuery("price").lte(300));
+
+        request.source().query(boolQuery);
+
+        // 3.发送请求
+        SearchResponse response = client.search(request, RequestOptions.DEFAULT);
         // System.out.println(response);
 
         // 4.解析结果数据
