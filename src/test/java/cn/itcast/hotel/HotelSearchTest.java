@@ -12,6 +12,7 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.sort.SortOrder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,8 +39,6 @@ public class HotelSearchTest {
 
             HotelDoc hotelDoc = JSON.parseObject(json, HotelDoc.class);
             System.out.println("HotelDoc = " + hotelDoc);
-
-            System.out.println(hotelDoc);
         }
     }
 
@@ -87,6 +86,25 @@ public class HotelSearchTest {
         // boolQuery.filter(QueryBuilders.rangeQuery("price").lte(300));
 
         request.source().query(boolQuery);
+
+        // 3.发送请求
+        SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+        // System.out.println(response);
+
+        // 4.解析结果数据
+        handleResponse(response);
+    }
+
+    @Test
+    void testPageSort() throws IOException {
+        int page = 2, size = 5;
+        // 1.准备Request
+        SearchRequest request = new SearchRequest("hotel");
+
+        // 2.准备DSL
+        request.source().query(QueryBuilders.matchAllQuery());
+        request.source().from((page - 1) * size).size(size);
+        request.source().sort("price", SortOrder.ASC);
 
         // 3.发送请求
         SearchResponse response = client.search(request, RequestOptions.DEFAULT);
