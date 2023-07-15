@@ -22,6 +22,26 @@ import java.io.IOException;
 public class HotelSearchTest {
     private RestHighLevelClient client;
 
+    private void handleResponse(SearchResponse response) {
+        // 4.解析结果数据
+        SearchHits searchHits = response.getHits();
+
+        // 获取返回结果的文档总数
+        long total = searchHits.getTotalHits().value;
+        System.out.println("搜索的文档数据的总数为：" + total);
+
+        SearchHit[] hits = searchHits.getHits();
+        // 遍历
+        for (SearchHit hit : hits) {
+            String json = hit.getSourceAsString();
+
+            HotelDoc hotelDoc = JSON.parseObject(json, HotelDoc.class);
+            System.out.println("HotelDoc = " + hotelDoc);
+
+            System.out.println(hotelDoc);
+        }
+    }
+
     @Test
     void testMatchAll() throws IOException {
         // 1.准备Request
@@ -34,27 +54,12 @@ public class HotelSearchTest {
         SearchResponse response = client.search(request, RequestOptions.DEFAULT);
 
         // System.out.println(response);
+        handleResponse(response);
 
-        // 4.解析结果数据
-        SearchHits searchHits = response.getHits();
-
-        // 获取返回结果的文档总数
-        long total = searchHits.getTotalHits().value;
-        System.out.println("数据总量为：" + total);
-
-        // 遍历
-        SearchHit[] hits = searchHits.getHits();
-        for (SearchHit hit : hits) {
-            String json = hit.getSourceAsString();
-
-            HotelDoc hotelDoc = JSON.parseObject(json, HotelDoc.class);
-
-            System.out.println(hotelDoc);
-        }
     }
 
     @Test
-    void testMatchQuery() throws IOException {
+    void testMatch() throws IOException {
         // 1.准备Request
         SearchRequest request = new SearchRequest("hotel");
 
@@ -67,21 +72,7 @@ public class HotelSearchTest {
         // System.out.println(response);
 
         // 4.解析结果数据
-        SearchHits searchHits = response.getHits();
-
-        // 获取返回结果的文档总数
-        long total = searchHits.getTotalHits().value;
-
-        SearchHit[] hits = searchHits.getHits();
-        // 遍历
-        for (SearchHit hit : hits) {
-            String json = hit.getSourceAsString();
-
-            HotelDoc hotelDoc = JSON.parseObject(json, HotelDoc.class);
-
-            System.out.println(hotelDoc);
-        }
-
+        handleResponse(response);
     }
 
     @BeforeEach
