@@ -12,13 +12,17 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.elasticsearch.search.sort.SortOrder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
+import java.util.Map;
 
 @SpringBootTest
 public class HotelSearchTest {
@@ -36,8 +40,18 @@ public class HotelSearchTest {
         // 遍历
         for (SearchHit hit : hits) {
             String json = hit.getSourceAsString();
-
             HotelDoc hotelDoc = JSON.parseObject(json, HotelDoc.class);
+            // 获取高亮字段数组
+            Map<String, HighlightField> highlightFields = hit.getHighlightFields();
+            if (!CollectionUtils.isEmpty(highlightFields)) {
+                HighlightField highlightField = highlightFields.get("name");
+                if (highlightField != null) {
+                    String highlightName = highlightField.getFragments()[0].string();
+                    // 替换原字段
+                    hotelDoc.setName(highlightName);
+                }
+            }
+
             System.out.println("HotelDoc = " + hotelDoc);
         }
     }
@@ -105,6 +119,23 @@ public class HotelSearchTest {
         request.source().query(QueryBuilders.matchAllQuery());
         request.source().from((page - 1) * size).size(size);
         request.source().sort("price", SortOrder.ASC);
+
+        // 3.发送请求
+        SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+        // System.out.println(response);
+
+        // 4.解析结果数据
+        handleResponse(response);
+    }
+
+    @Test
+    void testHighLight() throws IOException {
+        // 1.准备Request
+        SearchRequest request = new SearchRequest("hotel");
+
+        // 2.准备DSL
+        request.source().query(QueryBuilders.matchQuery("name", "如家"));
+        request.source().highlighter(new HighlightBuilder().field("name").requireFieldMatch(false));
 
         // 3.发送请求
         SearchResponse response = client.search(request, RequestOptions.DEFAULT);
