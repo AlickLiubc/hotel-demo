@@ -36,11 +36,11 @@ public class HotelSearchTest {
         // 4.解析结果数据
         SearchHits searchHits = response.getHits();
 
-        // 总数
+        // 获取返回结果的文档总数
         long total = searchHits.getTotalHits().value;
         System.out.println("数据总量为：" + total);
 
-        // 结果
+        // 遍历
         SearchHit[] hits = searchHits.getHits();
         for (SearchHit hit : hits) {
             String json = hit.getSourceAsString();
