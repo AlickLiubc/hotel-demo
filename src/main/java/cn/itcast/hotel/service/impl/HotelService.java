@@ -18,12 +18,14 @@ import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder;
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class HotelService extends ServiceImpl<HotelMapper, Hotel> implements IHotelService {
@@ -132,4 +134,87 @@ public class HotelService extends ServiceImpl<HotelMapper, Hotel> implements IHo
         request.source().query(functionScoreQuery);
     }
 
+    private List<String> handleAggResponse(String aggName, SearchResponse response) {
+        List<String> aggList = new ArrayList<>();
+
+        Aggregations aggregations = response.getAggregations();
+        Terms terms = aggregations.get(aggName);
+        List<? extends Terms.Bucket> buckets = terms.getBuckets();
+        for (Terms.Bucket bucket : buckets) {
+            String keyStr = bucket.getKeyAsString();
+            aggList.add(keyStr);
+        }
+
+        return aggList;
+    }
+
+//    @Override
+//    public Map<String, List<String>> filters() {
+//        Map<String, List<String>> filtersMap = new HashMap<>();
+//
+//        // 1.准备request
+//        SearchRequest request = new SearchRequest("hotel");
+//
+//        // 2.准备DSL
+//        request.source().size(0);
+//        Map<String, String> chineseFieldMap = new HashMap<>();
+//        chineseFieldMap.put("city", "城市");
+//        chineseFieldMap.put("brand", "品牌");
+//        chineseFieldMap.put("starName", "星级");
+//        List<String> fieldNames = Arrays.asList("city", "brand", "starName");
+//        for (String fieldName : fieldNames) {
+//            request.source().aggregation(AggregationBuilders
+//                                         .terms(fieldName + "Agg")
+//                                         .field(fieldName)
+//                                         .size(20));
+//
+//            // 3.发送请求
+//            try {
+//                SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+//
+//                // 4.解析结果
+//                filtersMap.put(chineseFieldMap.get(fieldName), handleAggResponse(fieldName + "Agg", response));
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
+//        }
+//
+//        return filtersMap;
+//    }
+
+    @Override
+    public Map<String, List<String>> getFilters(RequestParams requestParams) {
+        Map<String, List<String>> filtersMap = new HashMap<>();
+
+        // 1.准备request
+        SearchRequest request = new SearchRequest("hotel");
+
+        // 2.准备DSL
+        request.source().size(0);
+        buildBasicQuery(requestParams, request);
+
+        Map<String, String> chineseFieldMap = new HashMap<>();
+        chineseFieldMap.put("brand", "品牌");
+        chineseFieldMap.put("starName", "星级");
+        chineseFieldMap.put("city", "城市");
+        List<String> fieldNames = Arrays.asList("brand", "starName", "city");
+        for (String fieldName : fieldNames) {
+            request.source().aggregation(AggregationBuilders
+                    .terms(fieldName + "Agg")
+                    .field(fieldName)
+                    .size(20));
+
+            // 3.发送请求
+            try {
+                SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+
+                // 4.解析结果
+                filtersMap.put(fieldName, handleAggResponse(fieldName + "Agg", response));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return filtersMap;
+    }
 }
