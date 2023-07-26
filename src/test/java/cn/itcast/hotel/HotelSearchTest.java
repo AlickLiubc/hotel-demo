@@ -18,6 +18,10 @@ import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.elasticsearch.search.sort.SortOrder;
+import org.elasticsearch.search.suggest.Suggest;
+import org.elasticsearch.search.suggest.SuggestBuilder;
+import org.elasticsearch.search.suggest.SuggestBuilders;
+import org.elasticsearch.search.suggest.completion.CompletionSuggestion;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -176,10 +180,38 @@ public class HotelSearchTest {
         }
     }
 
+    @Test
+    void testSuggest() throws IOException {
+        // 1.准备request
+        SearchRequest request = new SearchRequest("hotel");
+
+        // 2.准备DSL
+        request.source().suggest(new SuggestBuilder().addSuggestion(
+                "suggestions", SuggestBuilders
+                                    .completionSuggestion("suggestion")
+                                    .prefix("ht")
+                                    .skipDuplicates(true)
+                                    .size(10)
+        ));
+
+        // 3.发送请求
+        SearchResponse response = client.search(request, RequestOptions.DEFAULT);
+        // System.out.println(response);
+
+        // 4.处理返回结果
+        Suggest suggest = response.getSuggest();
+        CompletionSuggestion completionSuggestion = suggest.getSuggestion("suggestions");
+        List<CompletionSuggestion.Entry.Option> options = completionSuggestion.getOptions();
+        for (CompletionSuggestion.Entry.Option option : options) {
+            String text = option.getText().string();
+            System.out.println(text);
+        }
+    }
+
     @BeforeEach
     void setUp() {
         this.client = new RestHighLevelClient(RestClient.builder(
-                HttpHost.create("http://139.196.189.139:9200")
+                HttpHost.create("http://127.0.0.1:9200")
         ));
     }
 
