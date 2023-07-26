@@ -23,4 +23,8 @@ public interface IHotelService extends IService<Hotel> {
      * @return 聚合结果，格式：{"城市": ["上海", "北京], "品牌": ["如家", "希尔顿"]}
      */
     Map<String, List<String>> getFilters(RequestParams requestParams);
+
+
+    List<String> getSuggestions(String prefix);
+
 }
